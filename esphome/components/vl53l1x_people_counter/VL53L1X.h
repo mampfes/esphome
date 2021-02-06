@@ -4,7 +4,7 @@
 #include <Wire.h>
 
 namespace esphome {
-namespace vl53l1x {
+namespace vl53l1x_people_counter {
 
 class VL53L1X {
  public:
@@ -1394,5 +1394,5 @@ class VL53L1X {
   float count_rate_fixed_to_float_(uint16_t count_rate_fixed) { return (float) count_rate_fixed / (1 << 7); }
 };
 
-}  // namespace vl53l1x
+}  // namespace vl53l1x_people_counter
 }  // namespace esphome

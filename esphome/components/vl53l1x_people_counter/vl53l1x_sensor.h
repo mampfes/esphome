@@ -5,7 +5,7 @@
 #include "esphome/components/i2c/i2c.h"
 
 namespace esphome {
-namespace vl53l1x {
+namespace vl53l1x_people_counter {
 
 class VL53L1X;
 
@@ -31,32 +31,59 @@ class VL53L1XSensor : public sensor::Sensor, public PollingComponent, public i2c
 
   void set_retry_budget(uint8_t budget) { retry_budget_ = budget; }
 
-  void set_user_roi(uint8_t top_left_x, uint8_t top_left_y, uint8_t bot_right_x, uint8_t bot_right_y) {
-    user_roi_.top_left_x = top_left_x;
-    user_roi_.top_left_y = top_left_y;
-    user_roi_.bot_right_x = bot_right_x;
-    user_roi_.bot_right_y = bot_right_y;
-    user_roi_.valid = true;
-  }
-
- protected:
+protected:
   VL53L1X* vl53l1x_{nullptr};
   DistanceMode distance_mode_{DistanceMode::LONG};
   uint32_t timing_budget_{50000};
   uint8_t retry_budget_{5};
   uint8_t retry_count_{0};
 
-  struct UserRoi {
-    bool valid;
-    uint8_t top_left_x;
-    uint8_t top_left_y;
-    uint8_t bot_right_x;
-    uint8_t bot_right_y;
+  struct MeasuringCycle
+  {
+    static const unsigned SIZE = 2;
 
-    UserRoi() : valid{false} {}
-  };
-  UserRoi user_roi_;
+    uint8_t get_index() { return index_; }
+    
+    float get_result(unsigned i) const { return result_[i]; }
+    void set_result(float r) { result_[index_] = r; }
+
+    struct Roi
+    {
+      uint8_t top_left_x;
+      uint8_t top_left_y;
+      uint8_t bot_right_x;
+      uint8_t bot_right_y;
+    };
+
+    const Roi& get_roi() const { return roi_[index_]; }
+
+    void start()
+    {
+      index_ = 0;
+      for (float & i : result_)
+      {
+        i = 0.0f;
+      }
+    }
+
+
+    bool next() // returns false if cycle has been completed
+    {
+      index_ = (index_ + 1) % SIZE;
+
+      return index_ == 0;
+    }
+
+    protected:
+    uint8_t index_{0};
+    float result_[SIZE] = {};
+    Roi roi_[SIZE] = {{0,0,15,7}, {0,8,15,15}};
+    
+  } measuring_cycle_;
+
+  void initiate_reading_();
+  void store_reading_(float r);
 };
 
-}  // namespace vl53l1x
+}  // namespace vl53l1x_people_counter
 }  // namespace esphome
