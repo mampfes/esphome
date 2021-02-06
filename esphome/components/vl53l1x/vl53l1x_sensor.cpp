@@ -34,6 +34,10 @@ void VL53L1XSensor::setup() {
       break;
   }
   vl53l1x_->set_measurement_timing_budget(timing_budget_);
+
+  if (user_roi_.valid) {
+    vl53l1x_->set_user_roi(user_roi_.top_left_x, user_roi_.top_left_y, user_roi_.bot_right_x, user_roi_.bot_right_y);
+  }
 }
 
 void VL53L1XSensor::update() {

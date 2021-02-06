@@ -1292,6 +1292,8 @@ class VL53L1X {
   bool set_measurement_timing_budget(uint32_t budget_us);
   uint32_t get_measurement_timing_budget();
 
+  bool set_user_roi(uint8_t top_left_x, uint8_t top_left_y, uint8_t bot_right_x, uint8_t bot_right_y);
+
   void start_continuous(uint32_t period_ms);
   void stop_continuous();
   uint16_t read(bool blocking = true);

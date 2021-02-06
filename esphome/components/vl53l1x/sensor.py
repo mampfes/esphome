@@ -19,6 +19,13 @@ vl53l1x_distance_modes = {
 CONF_DISTANCE_MODE = "distance_mode"
 CONF_TIMING_BUDGET = 'timing_budget'
 CONF_RETRY_BUDGET = 'retry_budget'
+CONF_USER_ROI = 'user_roi'
+
+# items for CONF_USER_ROI
+ITEM_TOP_LEFT_X = 'top_left_x'
+ITEM_TOP_LEFT_Y = 'top_left_y'
+ITEM_BOTTOM_RIGHT_X = 'bottom_right_x'
+ITEM_BOTTOM_RIGHT_Y = 'bottom_right_y'
 
 CONFIG_SCHEMA = sensor.sensor_schema(UNIT_METER, ICON_ARROW_EXPAND_VERTICAL, 2).extend({
     cv.GenerateID(): cv.declare_id(VL53L1XSensor),
@@ -28,6 +35,12 @@ CONFIG_SCHEMA = sensor.sensor_schema(UNIT_METER, ICON_ARROW_EXPAND_VERTICAL, 2).
                cv.Range(min=TimePeriod(microseconds=20000),
                         max=TimePeriod(microseconds=1100000))),
     cv.Optional(CONF_RETRY_BUDGET, default=5): cv.int_range(min=0, max=255),
+    cv.Optional(CONF_USER_ROI): cv.Schema({
+        cv.Required(ITEM_TOP_LEFT_X): cv.int_range(min=0, max=15),
+        cv.Required(ITEM_TOP_LEFT_Y): cv.int_range(min=0, max=15),
+        cv.Required(ITEM_BOTTOM_RIGHT_X): cv.int_range(min=0, max=15),
+        cv.Required(ITEM_BOTTOM_RIGHT_Y): cv.int_range(min=0, max=15),
+    }),
 }).extend(cv.polling_component_schema('60s')).extend(i2c.i2c_device_schema(0x29))
 
 
@@ -37,5 +50,11 @@ def to_code(config):
     cg.add(var.set_distance_mode(config[CONF_DISTANCE_MODE]))
     cg.add(var.set_timing_budget(config[CONF_TIMING_BUDGET]))
     cg.add(var.set_retry_budget(config[CONF_RETRY_BUDGET]))
+    if CONF_USER_ROI in config:
+        user_roi = config[CONF_USER_ROI]
+        cg.add(var.set_user_roi(user_roi[ITEM_TOP_LEFT_X],
+                                user_roi[ITEM_TOP_LEFT_Y],
+                                user_roi[ITEM_BOTTOM_RIGHT_X],
+                                user_roi[ITEM_BOTTOM_RIGHT_Y]))
     yield sensor.register_sensor(var, config)
     yield i2c.register_i2c_device(var, config)

@@ -31,12 +31,31 @@ class VL53L1XSensor : public sensor::Sensor, public PollingComponent, public i2c
 
   void set_retry_budget(uint8_t budget) { retry_budget_ = budget; }
 
+  void set_user_roi(uint8_t top_left_x, uint8_t top_left_y, uint8_t bot_right_x, uint8_t bot_right_y) {
+    user_roi_.top_left_x = top_left_x;
+    user_roi_.top_left_y = top_left_y;
+    user_roi_.bot_right_x = bot_right_x;
+    user_roi_.bot_right_y = bot_right_y;
+    user_roi_.valid = true;
+  }
+
  protected:
   VL53L1X* vl53l1x_{nullptr};
   DistanceMode distance_mode_{DistanceMode::LONG};
   uint32_t timing_budget_{50000};
   uint8_t retry_budget_{5};
   uint8_t retry_count_{0};
+
+  struct UserRoi {
+    bool valid;
+    uint8_t top_left_x;
+    uint8_t top_left_y;
+    uint8_t bot_right_x;
+    uint8_t bot_right_y;
+
+    UserRoi() : valid{false} {}
+  };
+  UserRoi user_roi_;
 };
 
 }  // namespace vl53l1x
